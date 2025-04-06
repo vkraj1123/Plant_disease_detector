@@ -35,7 +35,7 @@ def preprocess_image(img):
 # Prediction function
 def predict_image(img):
     processed = preprocess_image(img)
-    img = Image.open(img_path)
+    prediction = modal.predict(processed)
     predicted_class = class_names[np.argmax(prediction)]
     return predicted_class
 
