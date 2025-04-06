@@ -61,5 +61,5 @@ elif option == 'Capture from Camera':
 # Predict and display result
 if img is not None:
     pred_class = predict_image(img)
-    st.image(img, caption=f"Prediction: {pred_class}", use_column_width=True)
+    st.image(img, caption=f"Prediction: {pred_class}", use_container_width=True)
     st.success(f"Predicted Class: {pred_class}")
