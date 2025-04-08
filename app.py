@@ -37,11 +37,12 @@ def predict_image(img):
     if confidence < 70:
         return "Unknown / Not in database", confidence
     else:
-        return predicted_class, confidence
+        return class_names[predicted_class], confidence
     
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
-st.write("Upload a leaf image or use your camera to detect the plant disease. Currently support only for apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasbery, soybean, squash, strawberry, tomato only 😶")
+st.sidebar.title("About")
+st.sidebar.markdown("""Upload a leaf image or use your camera to detect the plant disease. Currently support only for apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasbery, soybean, squash, strawberry, tomato only""")
 
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))
 
@@ -59,6 +60,7 @@ if img is not None:
     pred_class, confidence = predict_image(img)
     if pred_class == "Unknown / Not in database":
         st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")
+        st.progress(int(confidence))
     else:
         st.image(img, caption=f"Prediction: {pred_class} ({confidence: .2f}%)", use_container_width=True)
         st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
