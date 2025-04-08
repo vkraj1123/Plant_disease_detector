@@ -120,25 +120,34 @@ if img is not None:
             else:
                 st.success(f"Predicted Class: **{pred_class}** with **{confidence:.2f}%** confidence.")
             st.progress(int(confidence))
+# -------------------------------
+# Feedback Button & Section
+# -------------------------------
+st.subheader("User Feedback (Optional)")
 
-            # Feedback UI
-            st.subheader("Was this prediction correct?")
-            feedback = st.radio("Your feedback:", ["Yes", "No, it was wrong"], horizontal=True)
-            if feedback == "No, it was wrong":
-                corrected_class = st.selectbox("Please choose the correct class:", class_names)
-            else:
-                corrected_class = pred_class
+feedback = st.radio("Was the prediction accurate?", ["Yes", "No, it was wrong"], horizontal=True)
 
-            if st.button("Submit Feedback"):
-                with open("user_feedback.csv", mode="a", newline="") as fb:
-                    writer = csv.writer(fb)
-                    if os.stat("user_feedback.csv").st_size == 0:
-                        writer.writerow(["Timestamp", "Image Name", "Predicted Class", "User Feedback", "Correct Class", "Confidence"])
-                    writer.writerow([
-                        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "uploaded_image.jpg", pred_class, feedback, corrected_class, f"{confidence:.2f}"
-                    ])
-                feedback_folder = os.path.join("feedback_data", corrected_class.replace(" ", "_"))
-                os.makedirs(feedback_folder, exist_ok=True)
-                img.save(os.path.join(feedback_folder, f"{datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"))
-                st.success("Thank you for your feedback!")
+if feedback == "No, it was wrong":
+    corrected_class = st.selectbox("Please choose the correct class:", class_names + ["Other / Not in List"])
+
+    if corrected_class == "Other / Not in List":
+        user_input_label = st.text_input("Enter correct crop or disease name (e.g., Mango___Anthracnose):")
+        corrected_class = user_input_label.strip()
+
+    if st.button("Submit Feedback"):
+        feedback_file = "plant_feedback_log.csv"
+        feedback_exists = os.path.exists(feedback_file)
+
+        with open(feedback_file, mode='a', newline='') as f:
+            writer = csv.writer(f)
+            if not feedback_exists:
+                writer.writerow(["Timestamp", "Image Name", "Predicted Class", "User Feedback Class"])
+            writer.writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "uploaded_image.jpg",
+                pred_class,
+                corrected_class
+            ])
+        st.success("Thank you! Your feedback has been recorded.")
+
+            
