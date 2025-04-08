@@ -3,6 +3,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
+# page config first
+st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 
 # ---------------------------------------------
 # Load Plant Disease Model
@@ -71,7 +73,6 @@ def predict_image(img):
 # ---------------------------------------------
 # Streamlit UI
 # ---------------------------------------------
-st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
 st.sidebar.title("About")
 st.sidebar.markdown("""
