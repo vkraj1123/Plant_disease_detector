@@ -4,13 +4,7 @@ from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
 import os
-import gdown
-file_id = '1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
-url = f'https://drive.google.com/uc?id={file_id}'
-output = 'PlantVillage-Dataset-master.zip'
 
-if not os.path.exists(output):
-    gdown.download(url, output, quiet=False)
 model = load_model('plant_disease_model.h5')
 
 class_names = [  # 38 classes
@@ -38,9 +32,13 @@ def preprocess_image(img):
 def predict_image(img):
     processed = preprocess_image(img)
     prediction = model.predict(processed)
-    predicted_class = class_names[np.argmax(prediction)]
+    predicted_class = np.argmax(prediction)
     confidence = np.max(prediction) * 100
-    return predicted_class, confidence
+
+    if confidence < 70:
+        return "Unknown / Not in database", confidence
+    else:
+        return predicted_class, confidence
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
 st.write("Upload a leaf image or use your camera to detect the plant disease.")
@@ -59,7 +57,8 @@ elif option == 'Capture from Camera':
         img = Image.open(picture)
 if img is not None:
     pred_class, confidence = predict_image(img)
-    st.image(img, caption=f"Prediction: {pred_class}", use_container_width=True)
-    st.success(f"Predicted: {pred_class} | Confidence: {confidence:.2f}%")
-if os.path.exists('confusion_matrix.png'):
-    st.image('confusion_matrix.png', caption='Confusion Matrix from Validation Data')
+    if pred_class == "Unknown / Not in database":
+        st.error(f"Low confidence ({confidence:.2f}%). The might not match any known disease.")
+    else:
+    st.image(img, caption=f"Prediction: {pred_class} ({confidence: .2f}%)", use_container_width=True)
+    st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
