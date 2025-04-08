@@ -41,6 +41,7 @@ def predict_image(img):
     
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
+st.write("currently support only for apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasberry, soybean, squash, strawberry and tomato only")
 st.sidebar.title("About")
 st.sidebar.markdown("""Upload a leaf image or use your camera to detect the plant disease. Currently support only for apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasbery, soybean, squash, strawberry, tomato only""")
 
