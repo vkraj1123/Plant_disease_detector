@@ -54,11 +54,6 @@ class_names = [
 # Green Pixel Ratio Leaf Detector
 # ---------------------------------------------
 def get_green_ratio(img):
-    import cv2
-import numpy as np
-from PIL import Image
-
-def is_leaf_image(img: Image.Image) -> bool:
     # Convert PIL image to NumPy and then to HSV
     img_np = np.array(img.convert("RGB"))
     hsv = cv2.cvtColor(img_np, cv2.COLOR_RGB2HSV)
@@ -83,7 +78,7 @@ def is_leaf_image(img: Image.Image) -> bool:
     # Print or log this value if needed
     return green_ratio > 0.05  # You can tune this threshold
 
-
+# def is_leaf_image(img: Image.Image) -> bool:
 # ---------------------------------------------
 # Preprocess image
 # ---------------------------------------------
