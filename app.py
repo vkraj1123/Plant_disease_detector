@@ -64,3 +64,4 @@ if img is not None:
     else:
         st.image(img, caption=f"Prediction: {pred_class} ({confidence: .2f}%)", use_container_width=True)
         st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
+        st.progress(int(confidence))
