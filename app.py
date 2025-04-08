@@ -74,7 +74,8 @@ if img is not None:
         else:
             pred_class, confidence = predict_image(img)
             if pred_class == "Unknown / Not in database":
-                st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")st.progress(int(confidence))
+                st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")
+                st.progress(int(confidence))
             else:
                 st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
                 st.progress(int(confidence))
