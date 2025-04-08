@@ -3,22 +3,17 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
-import gdown
 import os
-from sklearn.metrics import classification_report, confusion_matrix
-import seaborn as sns
-import matplotlib.pyplot as plt
+import gdown
 file_id = '1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
-url = f'https://drive.google.com/drive/folders/1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
-output = 'PlantVillage-Dataset-master'
+url = f'https://drive.google.com/uc?id={file_id}'
+output = 'PlantVillage-Dataset-master.zip'
+
 if not os.path.exists(output):
     gdown.download(url, output, quiet=False)
+model = load_model('plant_disease_model.h5')
 
-# Load the model
-model = load_model('plant_disease_model.h5')  # Place this file in the same directory
-
-# Define the class labels
-class_names = [
+class_names = [  # 38 classes
     'Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
     'Blueberry___healthy', 'Cherry_(including_sour)___Powdery_mildew', 'Cherry_(including_sour)___healthy',
     'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'Corn_(maize)___Common_rust',
@@ -33,8 +28,6 @@ class_names = [
     'Tomato___Target_Spot', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
     'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
 ]
-
-# Preprocessing function
 def preprocess_image(img):
     img = img.resize((224, 224))
     img_array = image.img_to_array(img)
@@ -42,17 +35,12 @@ def preprocess_image(img):
     img_array = img_array / 255.0
     return img_array
 
-# Prediction function
 def predict_image(img):
     processed = preprocess_image(img)
     prediction = model.predict(processed)
-    y_pred = model.predict(X_test)
-    y_pred_classes = np.argmax(y_pred, axis=1)
-    y_true = np.argmax(y_test, axis=1)
     predicted_class = class_names[np.argmax(prediction)]
-    return predicted_class
-
-# Streamlit UI
+    confidence = np.max(prediction) * 100
+    return predicted_class, confidence
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
 st.write("Upload a leaf image or use your camera to detect the plant disease.")
@@ -60,7 +48,6 @@ st.write("Upload a leaf image or use your camera to detect the plant disease.")
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))
 
 img = None
-
 if option == 'Upload from Gallery':
     uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
@@ -70,23 +57,9 @@ elif option == 'Capture from Camera':
     picture = st.camera_input("Take a picture")
     if picture is not None:
         img = Image.open(picture)
-# Confusion Matrix
-cm = confusion_matrix(y_true, y_pred_classes)
-plt.figure(figsize=(12, 8))
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
-            xticklabels=class_names,
-            yticklabels=class_names)
-plt.xlabel('Predicted')
-plt.ylabel('Actual')
-plt.title('Confusion Matrix')
-plt.show()
-plt.savefig('confusion_matrix.png')
-
-# Predict and display result
 if img is not None:
-    pred_class = predict_image(img)
+    pred_class, confidence = predict_image(img)
     st.image(img, caption=f"Prediction: {pred_class}", use_container_width=True)
-    st.success(f"Predicted Class: {pred_class}")
-# Display the saved confusion matrix
-image = Image.open('confusion_matrix.png')
-st.image(image, caption='Model Confusion Matrix')
+    st.success(f"Predicted: {pred_class} | Confidence: {confidence:.2f}%")
+if os.path.exists('confusion_matrix.png'):
+    st.image('confusion_matrix.png', caption='Confusion Matrix from Validation Data')
