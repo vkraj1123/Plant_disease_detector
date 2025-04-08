@@ -1,17 +1,22 @@
 import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
 import numpy as np
 from PIL import Image
-import os
-#Load the models
+
+# ---------------------------------------------
+# Load Plant Disease Model
+# ---------------------------------------------
 @st.cache_resource
-def load_resnet():
-    return ResNet50(weights='imagenet', include_top=True, input_shape=(224, 224, 3))
-model = load_model('plant_disease_model.h5')
-#Class labels
-class_names = [  # 38 classes
+def load_disease_model():
+    return load_model('plant_disease_model.h5')
+
+model = load_disease_model()
+
+# ---------------------------------------------
+# Class labels
+# ---------------------------------------------
+class_names = [
     'Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
     'Blueberry___healthy', 'Cherry_(including_sour)___Powdery_mildew', 'Cherry_(including_sour)___healthy',
     'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot', 'Corn_(maize)___Common_rust',
@@ -26,24 +31,33 @@ class_names = [  # 38 classes
     'Tomato___Target_Spot', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
     'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
 ]
-# Check if image is likely a plant/leaf
-def is_leaf_image(img):
-    resnet = load_resnet()
+
+# ---------------------------------------------
+# Green Pixel Ratio Leaf Detector
+# ---------------------------------------------
+def get_green_ratio(img):
     img = img.resize((224, 224))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    preds = resnet.predict(x)
-    label = decode_predictions(preds, top=1)[0][0][1]
-    return 'leaf' in label.lower() or 'plant' in label.lower()
-#preprocess for disease model
+    img_np = np.array(img)
+    if img_np.ndim != 3 or img_np.shape[2] != 3:
+        return 0.0
+    r, g, b = img_np[:, :, 0], img_np[:, :, 1], img_np[:, :, 2]
+    green_pixels = (g > r) & (g > b) & (g > 100)
+    green_ratio = np.sum(green_pixels) / (224 * 224)
+    return green_ratio
+
+# ---------------------------------------------
+# Preprocess image
+# ---------------------------------------------
 def preprocess_image(img):
     img = img.resize((224, 224))
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
     img_array = img_array / 255.0
     return img_array
-# Prediction logic with confidence threshold
+
+# ---------------------------------------------
+# Predict Disease
+# ---------------------------------------------
 def predict_image(img):
     processed = preprocess_image(img)
     prediction = model.predict(processed)
@@ -53,32 +67,60 @@ def predict_image(img):
         return "Unknown / Not in database", confidence
     else:
         return class_names[predicted_class], confidence
-# Streamlit UI 
+
+# ---------------------------------------------
+# Streamlit UI
+# ---------------------------------------------
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
 st.sidebar.title("About")
-st.sidebar.markdown("""Upload a leaf image or use your camera to detect the plant disease. **Supported Crops**: apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasbery, soybean, squash, strawberry, tomato only""")
+st.sidebar.markdown("""
+Upload a leaf image or use your camera to detect the plant disease.
+
+**Supported Crops**: apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, raspberry, soybean, squash, strawberry, tomato
+""")
+
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))
 img = None
+
 if option == 'Upload from Gallery':
     uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
         img = Image.open(uploaded_file)
+
 elif option == 'Capture from Camera':
     picture = st.camera_input("Take a picture")
     if picture is not None:
         img = Image.open(picture)
-# Prediction and UI logic
+
+# ---------------------------------------------
+# Threshold Slider for Green Ratio
+# ---------------------------------------------
+st.sidebar.subheader("Green Detection Sensitivity")
+green_threshold = st.sidebar.slider("Min. green pixel ratio", 0.05, 0.8, 0.25, step=0.01)
+
+# ---------------------------------------------
+# Main Logic
+# ---------------------------------------------
 if img is not None:
-    st.image(img, caption=f"Uploaded Image", use_container_width=True)
-    with st.spinner("Analyzing image......."):
-        if not is_leaf_image(img):
-            st.error("This image doesn't appear to be a plant or leaf.")
+    st.image(img, caption="Uploaded Image", use_container_width=True)
+    with st.spinner("Analyzing image..."):
+        green_ratio = get_green_ratio(img)
+        st.info(f"Detected Green Pixel Ratio: **{green_ratio:.2f}**")
+        
+        if green_ratio < green_threshold:
+            st.warning(f"Image appears to have low green content. It may not be a leaf/plant.")
         else:
             pred_class, confidence = predict_image(img)
             if pred_class == "Unknown / Not in database":
-                st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")
-                st.progress(int(confidence))
+                st.warning(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")
             else:
-                st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
-                st.progress(int(confidence))
+                st.success(f"Predicted Class: **{pred_class}** with **{confidence:.2f}%** confidence.")
+            st.progress(int(confidence))
+
+        # Logging values for future feedback/training
+        st.sidebar.markdown(f"""
+        **Debug Info**
+        - Green Ratio: `{green_ratio:.2f}`
+        - Threshold Used: `{green_threshold:.2f}`
+        """)
