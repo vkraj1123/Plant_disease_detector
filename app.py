@@ -141,19 +141,19 @@ if feedback == "No, it was wrong":
         with open(feedback_file, mode='a', newline='') as f:
             writer = csv.writer(f)
             # Save the image into a custom feedback directory
-        feedback_dir = "user_feedback_images"
-        os.makedirs(feedback_dir, exist_ok=True)
+            feedback_dir = "user_feedback_images"
+            os.makedirs(feedback_dir, exist_ok=True)
 
-        # Create a subfolder for the corrected class
-        folder_name = corrected_class.replace("/", "_").replace(" ", "_")
-        class_folder = os.path.join(feedback_dir, folder_name)
-        os.makedirs(class_folder, exist_ok=True)
+             # Create a subfolder for the corrected class
+             folder_name = corrected_class.replace("/", "_").replace(" ", "_")
+             class_folder = os.path.join(feedback_dir, folder_name)
+             os.makedirs(class_folder, exist_ok=True)
 
-        # Save image with timestamp
-        img_save_path = os.path.join(class_folder, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
-        img.save(img_save_path)
+            # Save image with timestamp
+             img_save_path = os.path.join(class_folder, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+             img.save(img_save_path)
 
-        st.info(f"Image saved for future training under: `{folder_name}`")
+             st.info(f"Image saved for future training under: `{folder_name}`")
 
             if not feedback_exists:
                 writer.writerow(["Timestamp", "Image Name", "Predicted Class", "User Feedback Class"])
