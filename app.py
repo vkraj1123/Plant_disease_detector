@@ -145,15 +145,15 @@ if feedback == "No, it was wrong":
             os.makedirs(feedback_dir, exist_ok=True)
 
              # Create a subfolder for the corrected class
-             folder_name = corrected_class.replace("/", "_").replace(" ", "_")
-             class_folder = os.path.join(feedback_dir, folder_name)
-             os.makedirs(class_folder, exist_ok=True)
+            folder_name = corrected_class.replace("/", "_").replace(" ", "_")
+            class_folder = os.path.join(feedback_dir, folder_name)
+            os.makedirs(class_folder, exist_ok=True)
 
             # Save image with timestamp
-             img_save_path = os.path.join(class_folder, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
-             img.save(img_save_path)
+            img_save_path = os.path.join(class_folder, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+            img.save(img_save_path)
 
-             st.info(f"Image saved for future training under: `{folder_name}`")
+            st.info(f"Image saved for future training under: `{folder_name}`")
 
             if not feedback_exists:
                 writer.writerow(["Timestamp", "Image Name", "Predicted Class", "User Feedback Class"])
