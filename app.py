@@ -41,7 +41,7 @@ def predict_image(img):
     
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
-st.write("Upload a leaf image or use your camera to detect the plant disease.")
+st.write("Upload a leaf image or use your camera to detect the plant disease. Currently support only for apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasbery, soybean, squash, strawberry, tomato only 😶")
 
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))
 
