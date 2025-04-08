@@ -53,8 +53,7 @@ class_names = [
 # ---------------------------------------------
 # Green Pixel Ratio Leaf Detector
 # ---------------------------------------------
-def get_green_ratio(img: Image.Image) -> bool:
-    # Convert PIL image to NumPy and then to HSV
+def get_green_ratio(img):
     img_np = np.array(img.convert("RGB"))
     hsv = cv2.cvtColor(img_np, cv2.COLOR_RGB2HSV)
 
@@ -74,29 +73,26 @@ def get_green_ratio(img: Image.Image) -> bool:
     total_pixels = img_np.shape[0] * img_np.shape[1]
 
     green_ratio = green_pixels / total_pixels
+    return green_ratio
 
-    # Print or log this value if needed
-    return green_ratio > 0.05  # You can tune this threshold
+# ---------------------------------------------
+# Leaf Shape Detector
+# ---------------------------------------------
 def is_leaf_shape(img: Image.Image) -> bool:
     img_np = np.array(img.convert("RGB"))
     gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, threshold1=30, threshold2=100)
-
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
     leaf_like_contours = 0
     for cnt in contours:
         area = cv2.contourArea(cnt)
         perimeter = cv2.arcLength(cnt, True)
-
         if area > 500 and perimeter > 100:
             circularity = 4 * np.pi * (area / (perimeter * perimeter + 1e-5))
             if 0.3 < circularity < 1.2:
                 leaf_like_contours += 1
-
     return leaf_like_contours >= 1
-
 
 # ---------------------------------------------
 # Preprocess image
@@ -159,6 +155,7 @@ if img is not None:
     with st.spinner("Analyzing image..."):
         green_ratio = get_green_ratio(img)
         st.info(f"Detected Green Pixel Ratio: **{green_ratio:.2f}**")
+
         if green_ratio < green_threshold or not is_leaf_shape(img):
             st.warning(f"Image does not appear to be a proper leaf. Please upload a clearer leaf image.")
         else:
@@ -170,21 +167,18 @@ if img is not None:
                 st.success(f"Predicted Class: **{pred_class}** with **{confidence:.2f}%** confidence.")
             st.progress(int(confidence))
 
-
-if st.sidebar.checkbox("Show detected leaf contours"):
-    img_np = np.array(img.convert("RGB"))
-    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    edges = cv2.Canny(blurred, threshold1=30, threshold2=100)
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contour_img = img_np.copy()
-    cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
-    st.image(contour_img, caption="Detected Contours", channels="RGB")
-
-
-        # Logging values for future feedback/training
         st.sidebar.markdown(f"""
         **Debug Info**
         - Green Ratio: `{green_ratio:.2f}`
         - Threshold Used: `{green_threshold:.2f}`
         """)
+
+    if st.sidebar.checkbox("Show detected leaf contours"):
+        img_np = np.array(img.convert("RGB"))
+        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, threshold1=30, threshold2=100)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contour_img = img_np.copy()
+        cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
+        st.image(contour_img, caption="Detected Contours", channels="RGB")
