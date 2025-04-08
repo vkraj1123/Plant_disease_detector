@@ -109,7 +109,6 @@ Developed by VK
 
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))  
 img = None  
-
 if option == 'Upload from Gallery':  
     uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])  
     if uploaded_file is not None:  
@@ -145,7 +144,7 @@ if img is not None:
                 st.warning(f"Low confidence ({confidence:.2f}%). No matching disease found.")  
             else:  
                 st.success(f"Prediction: **{pred_class}** with **{confidence:.2f}%** confidence.")  
-            st.progress(int(confidence))  
+                st.progress(int(confidence))  
 
         # Debug Information  
         st.sidebar.markdown(f"""  
