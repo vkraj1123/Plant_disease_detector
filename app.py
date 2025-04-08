@@ -77,7 +77,7 @@ st.sidebar.title("About")
 st.sidebar.markdown("""
 Upload a leaf image or use your camera to detect the plant disease.
 
-**Supported Crops**: apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, raspberry, soybean, squash, strawberry, tomato
+**Supported Crops**: apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, raspberry, soybean, squash, strawberry, tomato by V
 """)
 
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))
