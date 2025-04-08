@@ -1,6 +1,8 @@
 import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
+resnet = ResNet50(weights='imagenet')
 import numpy as np
 from PIL import Image
 import os
@@ -22,6 +24,14 @@ class_names = [  # 38 classes
     'Tomato___Target_Spot', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
     'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
 ]
+def is_leaf_image(img):
+    img = img.resize((224, 224))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    preds = resnet.predict(x)
+    label = decode_predictions(preds, top=1)[0][0][1]
+    return 'leaf' in label.lower() or 'plant' in label.lower()
 def preprocess_image(img):
     img = img.resize((224, 224))
     img_array = image.img_to_array(img)
@@ -57,11 +67,14 @@ elif option == 'Capture from Camera':
     if picture is not None:
         img = Image.open(picture)
 if img is not None:
-    pred_class, confidence = predict_image(img)
-    if pred_class == "Unknown / Not in database":
+    if not is_leaf_image(img):
+        st.error("This image doesn't appear to be a plant or leaf.")
+    else:
+        pred_class, confidence = predict_image(img)
+        if pred_class == "Unknown / Not in database":
         st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")
         st.progress(int(confidence))
-    else:
-        st.image(img, caption=f"Prediction: {pred_class} ({confidence: .2f}%)", use_container_width=True)
-        st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
-        st.progress(int(confidence))
+        else:
+            st.image(img, caption=f"Prediction: {pred_class} ({confidence: .2f}%)", use_container_width=True)
+            st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
+            st.progress(int(confidence))
