@@ -6,7 +6,9 @@ import numpy as np
 from PIL import Image
 import os
 #Load the models
-resnet = ResNet50(weights='imagenet')
+@st.cache_resource
+def load_resnet():
+    return ResNet50(weights='imagenet', include_top=True, input_shape=(224, 224, 3))
 model = load_model('plant_disease_model.h5')
 #Class labels
 class_names = [  # 38 classes
@@ -26,6 +28,7 @@ class_names = [  # 38 classes
 ]
 # Check if image is likely a plant/leaf
 def is_leaf_image(img):
+    resnet = load_resnet()
     img = img.resize((224, 224))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
