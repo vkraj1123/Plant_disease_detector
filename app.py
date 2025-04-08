@@ -1,6 +1,7 @@
 import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+import cv2
 import numpy as np
 from PIL import Image
 import csv
@@ -53,14 +54,35 @@ class_names = [
 # Green Pixel Ratio Leaf Detector
 # ---------------------------------------------
 def get_green_ratio(img):
-    img = img.resize((224, 224))
-    img_np = np.array(img)
-    if img_np.ndim != 3 or img_np.shape[2] != 3:
-        return 0.0
-    r, g, b = img_np[:, :, 0], img_np[:, :, 1], img_np[:, :, 2]
-    green_pixels = (g > r) & (g > b) & (g > 100)
-    green_ratio = np.sum(green_pixels) / (224 * 224)
-    return green_ratio
+    import cv2
+import numpy as np
+from PIL import Image
+
+def is_leaf_image(img: Image.Image) -> bool:
+    # Convert PIL image to NumPy and then to HSV
+    img_np = np.array(img.convert("RGB"))
+    hsv = cv2.cvtColor(img_np, cv2.COLOR_RGB2HSV)
+
+    # Define standard green range
+    lower_green = np.array([35, 40, 40])
+    upper_green = np.array([85, 255, 255])
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
+
+    # Define dark green range
+    lower_dark_green = np.array([35, 40, 20])
+    upper_dark_green = np.array([85, 255, 80])
+    mask_dark_green = cv2.inRange(hsv, lower_dark_green, upper_dark_green)
+
+    # Combine both masks
+    combined_mask = cv2.bitwise_or(mask_green, mask_dark_green)
+    green_pixels = cv2.countNonZero(combined_mask)
+    total_pixels = img_np.shape[0] * img_np.shape[1]
+
+    green_ratio = green_pixels / total_pixels
+
+    # Print or log this value if needed
+    return green_ratio > 0.05  # You can tune this threshold
+
 
 # ---------------------------------------------
 # Preprocess image
