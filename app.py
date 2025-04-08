@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import csv
 from datetime import datetime
+import os
 
 # Create a logging function
 def log_prediction(image_name, green_ratio, green_threshold, predicted_class, confidence):
