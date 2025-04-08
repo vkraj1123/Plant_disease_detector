@@ -5,6 +5,9 @@ import numpy as np
 from PIL import Image
 import gdown
 import os
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
 file_id = '1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
 url = f'https://drive.google.com/drive/folders/1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
 output = 'PlantVillage-Dataset-master'
@@ -43,6 +46,9 @@ def preprocess_image(img):
 def predict_image(img):
     processed = preprocess_image(img)
     prediction = model.predict(processed)
+    y_pred = model.predict(X_test)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    y_true = np.argmax(y_test, axis=1)
     predicted_class = class_names[np.argmax(prediction)]
     return predicted_class
 
@@ -64,9 +70,23 @@ elif option == 'Capture from Camera':
     picture = st.camera_input("Take a picture")
     if picture is not None:
         img = Image.open(picture)
+# Confusion Matrix
+cm = confusion_matrix(y_true, y_pred_classes)
+plt.figure(figsize=(12, 8))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+            xticklabels=class_names,
+            yticklabels=class_names)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+plt.savefig('confusion_matrix.png')
 
 # Predict and display result
 if img is not None:
     pred_class = predict_image(img)
     st.image(img, caption=f"Prediction: {pred_class}", use_container_width=True)
     st.success(f"Predicted Class: {pred_class}")
+# Display the saved confusion matrix
+image = Image.open('confusion_matrix.png')
+st.image(image, caption='Model Confusion Matrix')
