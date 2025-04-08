@@ -1,22 +1,12 @@
 import streamlit as st
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+import cv2
 import numpy as np
 from PIL import Image
 import csv
 from datetime import datetime
 import os
-
-# Create a logging function
-def log_prediction(image_name, green_ratio, green_threshold, predicted_class, confidence):
-    log_file = "plant_disease_log.csv"
-    log_exists = os.path.exists(log_file)
-
-    with open(log_file, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not log_exists:
-            writer.writerow(["Timestamp", "Image Name", "Green Pixel Ratio", "Green Threshold", "Predicted Class", "Confidence (%)"])
-        writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), image_name, green_ratio, green_threshold, predicted_class, f"{confidence:.2f}"])
 
 # page config first
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
@@ -30,6 +20,16 @@ def load_disease_model():
 
 model = load_disease_model()
 
+# Create a logging function
+def log_prediction(image_name, green_ratio, green_threshold, predicted_class, confidence):
+    log_file = "plant_disease_log.csv"
+    log_exists = os.path.exists(log_file)
+
+    with open(log_file, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        if not log_exists:
+            writer.writerow(["Timestamp", "Image Name", "Green Pixel Ratio", "Green Threshold", "Predicted Class", "Confidence (%)"])
+        writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), image_name, green_ratio, green_threshold, predicted_class, f"{confidence:.2f}"])
 # ---------------------------------------------
 # Class labels
 # ---------------------------------------------
