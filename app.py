@@ -55,15 +55,12 @@ st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
 st.sidebar.title("About")
 st.sidebar.markdown("""Upload a leaf image or use your camera to detect the plant disease. **Supported Crops**: apple, blueberry, cherry, corn, grape, orange, peach, pepper bell, potato, rasbery, soybean, squash, strawberry, tomato only""")
-
 option = st.radio("Choose input method:", ('Upload from Gallery', 'Capture from Camera'))
-
 img = None
 if option == 'Upload from Gallery':
     uploaded_file = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
         img = Image.open(uploaded_file)
-
 elif option == 'Capture from Camera':
     picture = st.camera_input("Take a picture")
     if picture is not None:
