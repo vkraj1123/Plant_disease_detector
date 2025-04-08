@@ -3,6 +3,13 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
+import gdown
+import os
+file_id = '1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
+url = f'https://drive.google.com/drive/folders/1MsxOhUxr5qiLHVxKeEDOJRBp2JIloHkt'
+output = 'PlantVillage-Dataset-master'
+if not os.path.exists(output):
+    gdown.download(url, output, quiet=False)
 
 # Load the model
 model = load_model('plant_disease_model.h5')  # Place this file in the same directory
