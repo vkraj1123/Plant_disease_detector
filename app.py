@@ -58,7 +58,7 @@ elif option == 'Capture from Camera':
 if img is not None:
     pred_class, confidence = predict_image(img)
     if pred_class == "Unknown / Not in database":
-        st.error(f"Low confidence ({confidence:.2f}%). The might not match any known disease.")
+        st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")
     else:
         st.image(img, caption=f"Prediction: {pred_class} ({confidence: .2f}%)", use_container_width=True)
         st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
