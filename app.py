@@ -34,11 +34,11 @@ def predict_image(img):
     prediction = model.predict(processed)
     predicted_class = np.argmax(prediction)
     confidence = np.max(prediction) * 100
-
     if confidence < 70:
-        return "Unknown / Not in database", confidence
+    return "Unknown / Not in database", confidence
     else:
-        return predicted_class, confidence
+    return predicted_class, confidence
+    
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 st.title("Plant Disease Detection AI")
 st.write("Upload a leaf image or use your camera to detect the plant disease.")
