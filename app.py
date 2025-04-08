@@ -69,12 +69,12 @@ elif option == 'Capture from Camera':
 if img is not None:
     st.image(img, caption=f"Uploaded Image", use_container_width=True)
     with st.spinner("Analyzing image......."):
-    if not is_leaf_image(img):
-        st.error("This image doesn't appear to be a plant or leaf.")
-    else:
-        pred_class, confidence = predict_image(img)
-        if pred_class == "Unknown / Not in database":
-            st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")st.progress(int(confidence))
+        if not is_leaf_image(img):
+            st.error("This image doesn't appear to be a plant or leaf.")
         else:
-            st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
-            st.progress(int(confidence))
+            pred_class, confidence = predict_image(img)
+            if pred_class == "Unknown / Not in database":
+                st.error(f"Low confidence ({confidence:.2f}%). This might not match any known disease.")st.progress(int(confidence))
+            else:
+                st.success(f"Predicted Class: {pred_class} with {confidence:.2f}% confidence")
+                st.progress(int(confidence))
